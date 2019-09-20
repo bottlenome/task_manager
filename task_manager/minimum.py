@@ -45,17 +45,16 @@ class SshWorker(Worker):
     
   def run(self, task):
     import paramiko
-    import getpass
-    username = 'urota'
-    print(username)
-    password = getpass.getpass()
+    import console
+    user, passwd = console.login_alert('Login')
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(
       paramiko.AutoAddPolicy())
     client.connect(self.address,
-                   22,username,password)
-    _, stdout, stderr = client.exec_command(task.cmd)
-    print(stdout.read().decode('utf8'))
+                   22,user,passwd)
+    for cmd in task.cmd:
+      _, stdout, stderr = client.exec_command(cmd)
+      print(stdout.read().decode('utf8'))
     client.close()
 
 class Task (object):
@@ -124,7 +123,7 @@ class Manager (object):
 def main():
   task_list = JsonTaskList(json_load('hoge'))
   programming = Task('programming')
-  echo = CmdTask('ls', 'ls -al')
+  echo = CmdTask('ls', ['ls -al'])
   worker_list = JsonWorkerList(json_load('worker_list'))
   worker = SshWorker('www.mizusawa.work')
   echo.set_worker(worker)
