@@ -5,8 +5,10 @@ def json_load(file_path):
   with open(file_path, 'r') as f:
     return json.load(f)
 
-def save_json_setting(file_path):
-  pass
+def json_save(file_path, setting):
+  import json
+  with open(file_path, 'w') as f:
+    json.dump(setting, f)
 
 class Status(Enum):
   New = 0
@@ -120,7 +122,30 @@ class Manager (object):
       self.check_task()
       # self.apply_task()
 
+class Setting (object):
+  def __init__(self, directory):
+    filename = 'setting.json'
+    self.setting = self.load(directory, filename)
+  
+  def load(self, directory, filename):
+    import os
+    direcrory_name = '.task_manager'
+    path = directory + os.sep + direcrory_name
+    if not os.path.exists(path):
+      os.mkdir(path)
+    path = path + filename
+    if not os.path.exists(path):
+      setting = {}
+      json_save(path, setting)
+    else:
+      setting = json_load(path)
+    return setting
+        
+
 def main():
+  import os
+  home = os.path.expanduser('~')
+  setting = Setting(home)
   task_list = JsonTaskList(json_load('hoge'))
   programming = Task('programming')
   echo = CmdTask('ls', ['ls -al'])
