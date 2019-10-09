@@ -59,6 +59,7 @@ class SshWorker(Worker):
       _, stdout, stderr = client.exec_command(cmd)
       print(stdout.read().decode('utf8'))
     client.close()
+    task.done()
   
   def get_status(self):
     return 'done'
@@ -78,6 +79,9 @@ class Task (object):
   def set_worker(self, worker):
     self.worker = worker
     self.status = Status.Waiting
+  
+  def done(self):
+    self.status = Status.Completed
 
 class CmdTask (Task):
   def __init__(self, name, cmd):
@@ -158,6 +162,7 @@ def main():
   import os
   home = os.path.expanduser('~')
   setting = Setting(home)
+  print(setting.setting)
   task_list = JsonTaskList(json_load('hoge'))
   programming = Task('programming')
   echo = CmdTask('ls', ['cd git/fab/;ls'])
