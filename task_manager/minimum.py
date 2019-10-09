@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from enum import Enum
 
 def json_load(file_path):
@@ -58,6 +59,9 @@ class SshWorker(Worker):
       _, stdout, stderr = client.exec_command(cmd)
       print(stdout.read().decode('utf8'))
     client.close()
+  
+  def get_status(self):
+    return 'done'
 
 class Task (object):
   def __init__(self, name):
@@ -124,23 +128,31 @@ class Manager (object):
 
 class Setting (object):
   def __init__(self, directory):
-    filename = 'setting.json'
-    self.setting = self.load(directory, filename)
-  
-  def load(self, directory, filename):
     import os
+    filename = 'setting.json'
     direcrory_name = '.task_manager'
-    path = directory + os.sep + direcrory_name
-    if not os.path.exists(path):
-      os.mkdir(path)
-    path = path + filename
-    if not os.path.exists(path):
+    setting_directory = directory + os.sep + direcrory_name
+
+    if not os.path.exists(setting_directory):
+      os.mkdir(setting_directory)
+    self.setting_path = setting_directory + filename
+    self.setting = self.load()
+  
+  def load(self):
+    import os
+    if not os.path.exists(self.setting_path):
       setting = {}
-      json_save(path, setting)
+      json_save(self.setting_path, setting)
     else:
-      setting = json_load(path)
+      setting = json_load(self.setting_path)
     return setting
-        
+  
+  def save(self):
+    json_save(self.setting_path, self.setting)
+  
+  def __del__(self):
+    self.save()
+    
 
 def main():
   import os
@@ -148,7 +160,7 @@ def main():
   setting = Setting(home)
   task_list = JsonTaskList(json_load('hoge'))
   programming = Task('programming')
-  echo = CmdTask('ls', ['ls -al'])
+  echo = CmdTask('ls', ['cd git/fab/;ls'])
   worker_list = JsonWorkerList(json_load('worker_list'))
   worker = SshWorker('www.mizusawa.work')
   echo.set_worker(worker)
@@ -158,6 +170,8 @@ def main():
   manager.show_task()
   manager.loop_flag = False
   manager.run()
+
+  
 
 if __name__ == '__main__':
   main()
