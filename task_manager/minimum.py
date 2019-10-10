@@ -95,9 +95,16 @@ class TaskList (object):
   def append(self, task):
     raise NotImplementedError()
 
-class JsonWorkerList (object):
-  def __init__(self, setting):
+class WorkerList (object):
+  def __init__(self, setting, io=None):
     self.setting = setting
+    self.io = io
+  
+  def save(self):
+    pass
+  
+  def __del__(self):
+    self.save()
 
 class JsonTaskList (TaskList):
   def __init__(self, setting):
@@ -166,7 +173,7 @@ def main():
   task_list = JsonTaskList(json_load('hoge'))
   programming = Task('programming')
   echo = CmdTask('ls', ['cd git/fab/;ls'])
-  worker_list = JsonWorkerList(json_load('worker_list'))
+  worker_list = WorkerList(json_load('worker_list'))
   worker = SshWorker('www.mizusawa.work')
   echo.set_worker(worker)
   manager = Manager(task_list)
