@@ -10,6 +10,20 @@ def json_save(file_path, setting):
   import json
   with open(file_path, 'w') as f:
     json.dump(setting, f)
+    
+class Io (object):
+  def load(self, path):
+    raise NotImplementedError
+  
+  def save(self, path, map):
+    raise NotImplementedError
+    
+class JsonIo(Io):
+  def load(self, path):
+    return json_load(path)
+  
+  def save(self, path, map):
+    return json_save(path, map)
 
 class Status(Enum):
   New = 0
@@ -96,7 +110,7 @@ class TaskList (object):
     raise NotImplementedError()
 
 class WorkerList (object):
-  def __init__(self, setting, io=None):
+  def __init__(self, setting, io):
     self.setting = setting
     self.io = io
   
@@ -173,7 +187,7 @@ def main():
   task_list = JsonTaskList(json_load('hoge'))
   programming = Task('programming')
   echo = CmdTask('ls', ['cd git/fab/;ls'])
-  worker_list = WorkerList(json_load('worker_list'))
+  worker_list = WorkerList(json_load('worker_list'), JsonIo())
   worker = SshWorker('www.mizusawa.work')
   echo.set_worker(worker)
   manager = Manager(task_list)
