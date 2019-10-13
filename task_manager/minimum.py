@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
 
+"""
 def json_load(file_path):
   import json
   with open(file_path, 'r') as f:
@@ -10,20 +11,29 @@ def json_save(file_path, setting):
   import json
   with open(file_path, 'w') as f:
     json.dump(setting, f)
-    
+"""
+
 class Io (object):
-  def load(self, path):
+  @staticmethod
+  def load(path):
     raise NotImplementedError
   
-  def save(self, path, map):
+  @staticmethod
+  def save(path, map):
     raise NotImplementedError
     
 class JsonIo(Io):
-  def load(self, path):
-    return json_load(path)
+  @staticmethod
+  def load(path):
+    import json
+    with open(path, 'r') as f:
+      return json.load(f)
   
-  def save(self, path, map):
-    return json_save(path, map)
+  @staticmethod
+  def save(path, map):
+    import json
+    with open(path, 'w') as f:
+      json.dump(map, f)
 
 class Status(Enum):
   New = 0
@@ -125,10 +135,10 @@ class JsonTaskList (TaskList):
     self.setting = setting
 
   def append(self, task):
-    self.setting['tasks'].append(task)
+    self.setting.setting['tasks'].append(task)
 
   def show(self):
-    for task in self.setting['tasks']:
+    for task in self.setting.setting['tasks']:
       task.show()
 
 class Manager (object):
@@ -152,28 +162,30 @@ class Manager (object):
       # self.apply_task()
 
 class Setting (object):
-  def __init__(self, directory):
+  def __init__(self, directory, io):
     import os
     filename = 'setting.json'
     direcrory_name = '.task_manager'
     setting_directory = directory + os.sep + direcrory_name
+    
+    self.io = io
 
     if not os.path.exists(setting_directory):
       os.mkdir(setting_directory)
-    self.setting_path = setting_directory + filename
+    self.setting_path = setting_directory + os.sep + filename
     self.setting = self.load()
   
   def load(self):
     import os
     if not os.path.exists(self.setting_path):
-      setting = {}
-      json_save(self.setting_path, setting)
+      setting = {'tasks':[]}
+      self.io.save(self.setting_path, setting)
     else:
-      setting = json_load(self.setting_path)
+      setting = self.io.load(self.setting_path)
     return setting
   
   def save(self):
-    json_save(self.setting_path, self.setting)
+    self.io.save(self.setting_path, self.setting)
   
   def __del__(self):
     self.save()
@@ -182,12 +194,12 @@ class Setting (object):
 def main():
   import os
   home = os.path.expanduser('~')
-  setting = Setting(home)
+  setting = Setting(home, JsonIo)
   print(setting.setting)
-  task_list = JsonTaskList(json_load('hoge'))
+  task_list = JsonTaskList(setting)
   programming = Task('programming')
   echo = CmdTask('ls', ['cd git/fab/;ls'])
-  worker_list = WorkerList(json_load('worker_list'), JsonIo())
+  worker_list = WorkerList(setting, JsonIo)
   worker = SshWorker('www.mizusawa.work')
   echo.set_worker(worker)
   manager = Manager(task_list)
@@ -196,7 +208,6 @@ def main():
   manager.show_task()
   manager.loop_flag = False
   manager.run()
-
   
 
 if __name__ == '__main__':
