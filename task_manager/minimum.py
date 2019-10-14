@@ -1,5 +1,30 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
+import json
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, o):
+        if type(o) is Status:
+            return {o.__class__.__name__: o.value}
+        else:
+            return {o.__class__.__name__: o.__dict__}
+
+
+def json_decode(dct):
+    keys = list(dct.keys())
+    # detect class if UpperCamlCase
+    if len(keys) == 1 and keys[0].istitle():
+        for key in dct.keys():
+            cls = globals()[key]
+            if '__dict__' in dir(cls):
+                cls = cls.__new__(cls)
+                cls.__dict__.update(dct[key])
+                return cls
+            else:  # for enum
+                return cls(dct[key])
+    else:
+        return dct
 
 
 class Io (object):
@@ -17,22 +42,22 @@ class JsonIo(Io):
     def load(path):
         import json
         with open(path, 'r') as f:
-            return json.load(f)
+            return json.load(f, object_hook=json_decode)
 
     @staticmethod
     def save(path, map):
         import json
         with open(path, 'w') as f:
-            json.dump(map, f)
+            json.dump(map, f, cls=JsonEncoder, indent=2)
 
 
 class Status(Enum):
-    New = 0
-    Waiting = 1
-    Working = 2
-    Pending = 3
-    Completed = 4
-    Discontinued = 5
+    New = 'new'
+    Waiting = 'waiting'
+    Working = 'working'
+    Pending = 'pending'
+    Completed = 'completed'
+    Discontinued = 'discontinued'
 
 
 class Worker (object):
@@ -67,8 +92,13 @@ class SshWorker(Worker):
 
     def run(self, task):
         import paramiko
-        import console
-        user, passwd = console.login_alert('Login')
+        try:
+            import console
+            user, passwd = console.login_alert('Login')
+        except ImportError:
+            import getpass
+            user = 'urota'
+            passwd = getpass.getpass()
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(
             paramiko.AutoAddPolicy())
@@ -187,6 +217,7 @@ class Setting (object):
         return setting
 
     def save(self):
+        print(self.setting_path, self.setting)
         self.io.save(self.setting_path, self.setting)
 
     def __del__(self):
