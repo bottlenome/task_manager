@@ -13,16 +13,15 @@ class JsonEncoder(json.JSONEncoder):
 
 def json_decode(dct):
     keys = list(dct.keys())
-    # detect class if UpperCamlCase
-    if len(keys) == 1 and keys[0].istitle():
-        for key in dct.keys():
-            cls = globals()[key]
-            if '__dict__' in dir(cls):
-                cls = cls.__new__(cls)
-                cls.__dict__.update(dct[key])
-                return cls
-            else:  # for enum
-                return cls(dct[key])
+    # detect class if dict length equal to 1
+    if len(keys) == 1 and (keys[0] in globals()):
+        cls = globals()[keys[0]]
+        if '__dict__' in dir(cls):
+            cls = cls.__new__(cls)
+            cls.__dict__.update(dct[keys[0]])
+            return cls
+        else:  # for enum
+            return cls(dct[keys[0]])
     else:
         return dct
 
@@ -157,7 +156,8 @@ class WorkerList (object):
         pass
 
     def __del__(self):
-        self.save()
+        # self.save()
+        pass
 
 
 class JsonTaskList (TaskList):
@@ -221,7 +221,8 @@ class Setting (object):
         self.io.save(self.setting_path, self.setting)
 
     def __del__(self):
-        self.save()
+        # self.save()
+        pass
 
 
 def main():
@@ -233,7 +234,8 @@ def main():
     programming = Task('programming')
     echo = CmdTask('ls', ['cd git/fab/;ls'])
     worker_list = WorkerList(setting, JsonIo)
-    worker = SshWorker('www.mizusawa.work')
+    # worker = SshWorker('www.mizusawa.work')
+    worker = SshWorker('192.168.10.10')
     echo.set_worker(worker)
     manager = Manager(task_list)
     manager.add_task(programming)
@@ -241,6 +243,7 @@ def main():
     manager.show_task()
     manager.loop_flag = False
     manager.run()
+    setting.save()
 
 
 if __name__ == '__main__':
