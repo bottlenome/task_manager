@@ -7,5 +7,3 @@
   * stdout
   * stderr
   * status.json
- * workerの状態
- workers.json

@@ -115,9 +115,11 @@ class SshWorker(Worker):
 
 class Task (object):
     def __init__(self, name):
+        import uuid
         self.name = name
         self.status = Status.New
         self.worker = DefaultWorker()
+        self.id = uuid.uuid4()
 
     def show(self):
         if self.status is Status.Working:
