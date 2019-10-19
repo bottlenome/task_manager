@@ -8,4 +8,7 @@
 - [x] ssh workerでタスクのステータスを更新するようにする
 - [ ] ssh workerを非同期実行にする
 - [ ] workerを、あらかじめ設定してあるリストから選ぶようにする
-- 
+- [ ] taskにidをつける
+- [x] completedになっているタスクを実行しないようにする
+- [ ] 結果の保存をする
+- [ ] JsonTaskListをTaskListに統合する

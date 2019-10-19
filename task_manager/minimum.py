@@ -122,7 +122,10 @@ class Task (object):
     def show(self):
         if self.status is Status.Working:
             self.status = self.worker.update_status()
-        self.worker.run(self)
+        if self.status is Status.Completed:
+            pass
+        else:
+            self.worker.run(self)
         print(self.name, self.status, self.worker.get_status())
 
     def set_worker(self, worker):
