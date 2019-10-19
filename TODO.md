@@ -11,4 +11,4 @@
 - [ ] taskにidをつける
 - [x] completedになっているタスクを実行しないようにする
 - [ ] 結果の保存をする
-- [ ] JsonTaskListをTaskListに統合する
+- [x] JsonTaskListをTaskListに統合する

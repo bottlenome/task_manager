@@ -144,10 +144,14 @@ class CmdTask (Task):
 
 class TaskList (object):
     def __init__(self, setting):
-        raise NotImplementedError()
+        self.setting = setting
 
     def append(self, task):
-        raise NotImplementedError()
+        self.setting.setting['tasks'].append(task)
+
+    def show(self):
+        for task in self.setting.setting['tasks']:
+            task.show()
 
 
 class WorkerList (object):
@@ -161,18 +165,6 @@ class WorkerList (object):
     def __del__(self):
         # self.save()
         pass
-
-
-class JsonTaskList (TaskList):
-    def __init__(self, setting):
-        self.setting = setting
-
-    def append(self, task):
-        self.setting.setting['tasks'].append(task)
-
-    def show(self):
-        for task in self.setting.setting['tasks']:
-            task.show()
 
 
 class Manager (object):
@@ -233,7 +225,7 @@ def main():
     home = os.path.expanduser('~')
     setting = Setting(home, JsonIo)
     print(setting.setting)
-    task_list = JsonTaskList(setting)
+    task_list = TaskList(setting)
     programming = Task('programming')
     echo = CmdTask('ls', ['cd git/fab/;ls'])
     worker_list = WorkerList(setting, JsonIo)
